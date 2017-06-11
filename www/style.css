@@ -1,0 +1,299 @@
+@font-face {
+	font-family: 'Material Icons';
+	font-style: normal;
+	font-weight: 400;
+	src: url(fonts/MaterialIcons-Regular.eot);
+	src: local('Material Icons'),
+	local('MaterialIcons-Regular'),
+	url(fonts/MaterialIcons-Regular.woff2) format('woff2'),
+	url(fonts/MaterialIcons-Regular.woff) format('woff'),
+	url(fonts/MaterialIcons-Regular.ttf) format('truetype');
+}
+
+.material-icons {
+	font-family: 'Material Icons';
+	font-weight: normal;
+	font-style: normal;
+	font-size: 24px; /* Preferred icon size */
+	display: inline-block;
+	line-height: 1;
+	text-transform: none;
+	letter-spacing: normal;
+	word-wrap: normal;
+	white-space: nowrap;
+	direction: ltr;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+	-moz-osx-font-smoothing: grayscale;
+	font-feature-settings: 'liga';
+}
+
+body {
+	background-color: #0b0b20;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	font-family: Arial, sans-serif;
+	color: white;
+	cursor: none;
+	user-select: none;
+}
+
+button:focus {
+	outline: 0;
+}
+
+h1 {
+	text-align: center;
+	font-size: 20px;
+	margin-bottom: 30px;
+}
+
+#options {
+	min-width: 250px;
+	max-width: 350px;
+	overflow: auto;
+	cursor: default;
+	margin: auto;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	width: 50%;
+	height: 50%;
+	background-color: rgba(22, 22, 32, 0.7);
+	border: 1px solid #6b6b80;
+	border-radius: 4px 10px;
+	padding: 8px 16px;
+	color: white;
+}
+
+#btnclose {
+	cursor: pointer;
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	background-color: rgba(43, 43, 64, 0.5);
+	border: 1px solid #6b6b80;
+	border-radius: 4px 10px;
+	color: white;
+	width: 35px;
+	height: 35px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	-webkit-transition-duration: 0.3s;
+	transition-duration: 0.3s;
+}
+
+#btnclose > .material-icons {
+	font-size: 14px;
+}
+
+#btnclose:hover {
+	background-color: rgba(86, 86, 128, 0.7);
+	border: 1px solid #ababc0;
+	-webkit-transition-duration: 0.1s;
+	transition-duration: 0.1s;
+}
+
+#btnclose:active {
+	background-color: rgba(86, 86, 128, 1.0);
+	border: 1px solid #cbcbe0;
+	-webkit-transition-duration: 0.1s;
+	transition-duration: 0.1s;
+}
+
+.optiontoggle {
+	height: 30px;
+	line-height: 30px;
+	margin: 10px 0;
+}
+
+.optiontoggle > .toggle {
+	float: right;
+}
+
+.toggle > .btntoggle {
+	cursor: pointer;
+	height: 30px;
+	width: 40px;
+	background-color: rgba(43, 43, 64, 0.5);
+	border: 1px solid #6b6b80;
+	color: white;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 14px;
+	-webkit-transition-duration: 0.3s;
+	transition-duration: 0.3s;
+}
+
+.toggle > .btntoggle:hover {
+	background-color: rgba(86, 86, 128, 0.7);
+	-webkit-transition-duration: 0.1s;
+	transition-duration: 0.1s;
+}
+
+.toggle > .btntoggle:active {
+	background-color: rgba(86, 86, 128, 1.0);
+	-webkit-transition-duration: 0.1s;
+	transition-duration: 0.1s;
+}
+
+.toggle > .btnoff {
+	border-radius: 4px 0 0 10px;
+	border-right: none;
+}
+
+.toggle > .btnon {
+	border-radius: 0 10px 4px 0;
+	border-left: none;
+}
+
+.toggle > .active {
+	background-color: rgba(86, 86, 128, 1.0);
+	border: 1px solid #cbcbe0;
+	-webkit-transition-duration: 0.1s;
+	transition-duration: 0.1s;
+}
+
+#btnoptions {
+	cursor: pointer;
+	position: absolute;
+	top: 20px;
+	left: 20px;
+	background-color: rgba(43, 43, 64, 0.5);
+	border: 1px solid #6b6b80;
+	border-radius: 4px 10px;
+	color: white;
+	width: 50px;
+	height: 50px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 14px;
+	-webkit-transition-duration: 0.3s;
+	transition-duration: 0.3s;
+}
+
+#btnoptions:hover {
+	background-color: rgba(86, 86, 128, 0.7);
+	border: 1px solid #ababc0;
+	-webkit-transition-duration: 0.1s;
+	transition-duration: 0.1s;
+}
+
+#btnoptions:active {
+	background-color: rgba(86, 86, 128, 1.0);
+	border: 1px solid #cbcbe0;
+	-webkit-transition-duration: 0.1s;
+	transition-duration: 0.1s;
+}
+
+#btnfullscreen {
+	cursor: pointer;
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	background-color: rgba(43, 43, 64, 0.5);
+	border: 1px solid #6b6b80;
+	border-radius: 4px 10px;
+	color: white;
+	width: 50px;
+	height: 50px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 14px;
+	-webkit-transition-duration: 0.3s;
+	transition-duration: 0.3s;
+}
+
+#btnfullscreen:hover {
+	background-color: rgba(86, 86, 128, 0.7);
+	border: 1px solid #ababc0;
+	-webkit-transition-duration: 0.1s;
+	transition-duration: 0.1s;
+}
+
+#btnfullscreen:active {
+	background-color: rgba(86, 86, 128, 1.0);
+	border: 1px solid #cbcbe0;
+	-webkit-transition-duration: 0.1s;
+	transition-duration: 0.1s;
+}
+
+.plusminusgroup {
+	display: inline-block;
+	color: white;
+	height: 50px;
+}
+
+.plusminusgroup > div {
+	cursor: default;
+	background-color: rgba(22, 22, 32, 0.7);
+	text-align: center;
+	display: inline-block;
+	border: 1px solid #6b6b80;
+	height: 48px;
+	line-height: 48px;
+	width: 70px;
+	border-left: 0;
+	border-right: 0;
+	vertical-align: top;
+}
+
+.plusminusgroup > div > i {
+	line-height: 48px;
+}
+
+.plusminusgroup > .btndecrease {
+	border-radius: 4px 0 0 10px;
+}
+
+.plusminusgroup > .btnincrease {
+	border-radius: 0 10px 4px 0;
+}
+
+.plusminusgroup > .btnincrease, .plusminusgroup > .btndecrease {
+	cursor: pointer;
+	background-color: rgba(43, 43, 64, 0.5);
+	border: 1px solid #6b6b80;
+	color: white;
+	width: 50px;
+	height: 50px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 14px;
+	-webkit-transition-duration: 0.3s;
+	transition-duration: 0.3s;
+}
+
+.plusminusgroup > .btnincrease:hover, .plusminusgroup > .btndecrease:hover {
+	background-color: rgba(86, 86, 128, 0.7);
+	border: 1px solid #ababc0;
+	-webkit-transition-duration: 0.1s;
+	transition-duration: 0.1s;
+}
+
+.plusminusgroup > .btnincrease:active, .plusminusgroup > .btndecrease:active {
+	background-color: rgba(86, 86, 128, 1.0);
+	border: 1px solid #cbcbe0;
+	-webkit-transition-duration: 0.1s;
+	transition-duration: 0.1s;
+}
+
+.bottomleft {
+	position: absolute;
+	bottom: 20px;
+	left: 20px;
+}
+
+.bottomright {
+	position: absolute;
+	bottom: 20px;
+	right: 20px;
+}
