@@ -31,3 +31,6 @@ closure-compiler --compilation_level SIMPLE --js src/*.js --language_in ECMASCRI
 
 ## Deployment
 After successful installation and compilation copy contents of `www` to a web server of your choice.
+
+## Screenshot
+![Microbes Screenshot](/screenshot.png?raw=true)
