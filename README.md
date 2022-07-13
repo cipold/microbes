@@ -29,7 +29,7 @@ Use `debug.html` instead of `index.html` for development and debugging.
 ### Compilation
 To compile `microbes.min.js` execute the following line from repository root:
 ```lang=bash
-closure-compiler --compilation_level SIMPLE --js src/*.js --language_in ECMASCRIPT6_STRICT --language_out ECMASCRIPT5_STRICT --js_output_file www/microbes.min.js
+npx google-closure-compiler --compilation_level SIMPLE --js src/*.js --language_in ECMASCRIPT6_STRICT --language_out ECMASCRIPT5_STRICT --js_output_file www/microbes.min.js
 ```
 
 ## Deployment
