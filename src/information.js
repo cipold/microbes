@@ -21,8 +21,8 @@ class Information {
 		const l = this.values.length;
 		if (l > 0) {
 			return this.values.reduce(function (a, b) {
-					return a + b;
-				}) / l;
+				return a + b;
+			}) / l;
 		} else {
 			return 0;
 		}

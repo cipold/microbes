@@ -73,6 +73,90 @@ class Graphics {
 		if (debug) this.stage.addChild(this.statusText);
 	}
 
+	static getMicrobeTexture(renderer, tsf) {
+		const g = new PIXI.Graphics();
+
+		// Head
+		g.lineStyle(2 / 5 * tsf, 0xff0000, 1.0);
+		g.moveTo(0, 0);
+		g.lineTo(2 / 5 * tsf, 0);
+
+		// Body
+		g.lineStyle(3 / 5 * tsf, 0x00ff00, 1.0);
+		g.moveTo(0, 0);
+		g.lineTo(-3 / 5 * tsf, 0);
+
+		return renderer.generateTexture(g);
+	}
+
+	static getFoodTexture(renderer, tsf) {
+		const g = new PIXI.Graphics();
+
+		g.lineStyle(0);
+		g.beginFill(0x9696ff, 1.0);
+		g.drawCircle(0, 0, 0.5 * tsf);
+
+		return renderer.generateTexture(g);
+	}
+
+	static getExplosionTexture(renderer, tsf) {
+		const g = new PIXI.Graphics();
+
+		g.lineStyle(0);
+		g.beginFill(0xffffff, 1.0);
+		g.drawCircle(0, 0, 0.5 * tsf);
+
+		return renderer.generateTexture(g);
+	}
+
+	static getBackgroundTexture(scaledRadius, borderSoftUnscaled, borderHardUnscaled) {
+		const r = scaledRadius;
+		const canvas = document.createElement('canvas');
+		canvas.width = 2 * r;
+		canvas.height = 2 * r;
+		const context = canvas.getContext('2d');
+
+		const gradient = context.createRadialGradient(r, r, 0, r, r, r);
+		gradient.addColorStop(0, '#0d0d28');
+		gradient.addColorStop(borderSoftUnscaled, '#161638');
+		gradient.addColorStop(borderHardUnscaled, '#303060');
+		gradient.addColorStop(1, 'rgba(11, 11, 32, 0)');
+		context.fillStyle = gradient;
+		context.fillRect(0, 0, 2 * r, 2 * r);
+
+		return PIXI.Texture.fromCanvas(canvas);
+	}
+
+	static getHoverTexture(renderer, tsf) {
+		const g = new PIXI.Graphics();
+
+		g.lineStyle(0);
+		g.beginFill(0x9696ff, 0.2);
+		g.drawCircle(0, 0, 0.5 * tsf);
+
+		return renderer.generateTexture(g);
+	}
+
+	static getHoverFillTexture(tsf) {
+		const r = 0.5 * tsf;
+		const canvas = document.createElement('canvas');
+		canvas.width = tsf;
+		canvas.height = tsf;
+		const context = canvas.getContext('2d');
+
+		context.beginPath();
+		context.arc(r, r, r, 0, 2 * Math.PI);
+		context.closePath();
+		const gradient = context.createRadialGradient(r, r, 0, r, r, r);
+		gradient.addColorStop(0.2, 'rgba(150, 150, 255, 0.2)');
+		gradient.addColorStop(0.7, 'rgba(150, 150, 255, 0.2)');
+		gradient.addColorStop(1, 'rgba(150, 150, 255, 0.6)');
+		context.fillStyle = gradient;
+		context.fill();
+
+		return PIXI.Texture.fromCanvas(canvas);
+	}
+
 	getInteractive() {
 		return this.renderer.view;
 	}
@@ -257,90 +341,6 @@ class Graphics {
 			hoverPos.hoverFillSprite.destroy();
 			delete hoverPos.hoverFillSprite;
 		}
-	}
-
-	static getMicrobeTexture(renderer, tsf) {
-		const g = new PIXI.Graphics();
-
-		// Head
-		g.lineStyle(2 / 5 * tsf, 0xff0000, 1.0);
-		g.moveTo(0, 0);
-		g.lineTo(2 / 5 * tsf, 0);
-
-		// Body
-		g.lineStyle(3 / 5 * tsf, 0x00ff00, 1.0);
-		g.moveTo(0, 0);
-		g.lineTo(-3 / 5 * tsf, 0);
-
-		return renderer.generateTexture(g);
-	}
-
-	static getFoodTexture(renderer, tsf) {
-		const g = new PIXI.Graphics();
-
-		g.lineStyle(0);
-		g.beginFill(0x9696ff, 1.0);
-		g.drawCircle(0, 0, 0.5 * tsf);
-
-		return renderer.generateTexture(g);
-	}
-
-	static getExplosionTexture(renderer, tsf) {
-		const g = new PIXI.Graphics();
-
-		g.lineStyle(0);
-		g.beginFill(0xffffff, 1.0);
-		g.drawCircle(0, 0, 0.5 * tsf);
-
-		return renderer.generateTexture(g);
-	}
-
-	static getBackgroundTexture(scaledRadius, borderSoftUnscaled, borderHardUnscaled) {
-		const r = scaledRadius;
-		const canvas = document.createElement('canvas');
-		canvas.width = 2 * r;
-		canvas.height = 2 * r;
-		const context = canvas.getContext('2d');
-
-		const gradient = context.createRadialGradient(r, r, 0, r, r, r);
-		gradient.addColorStop(0, '#0d0d28');
-		gradient.addColorStop(borderSoftUnscaled, '#161638');
-		gradient.addColorStop(borderHardUnscaled, '#303060');
-		gradient.addColorStop(1, 'rgba(11, 11, 32, 0)');
-		context.fillStyle = gradient;
-		context.fillRect(0, 0, 2 * r, 2 * r);
-
-		return PIXI.Texture.fromCanvas(canvas);
-	}
-
-	static getHoverTexture(renderer, tsf) {
-		const g = new PIXI.Graphics();
-
-		g.lineStyle(0);
-		g.beginFill(0x9696ff, 0.2);
-		g.drawCircle(0, 0, 0.5 * tsf);
-
-		return renderer.generateTexture(g);
-	}
-
-	static getHoverFillTexture(tsf) {
-		const r = 0.5 * tsf;
-		const canvas = document.createElement('canvas');
-		canvas.width = tsf;
-		canvas.height = tsf;
-		const context = canvas.getContext('2d');
-
-		context.beginPath();
-		context.arc(r, r, r, 0, 2 * Math.PI);
-		context.closePath();
-		const gradient = context.createRadialGradient(r, r, 0, r, r, r);
-		gradient.addColorStop(0.2, 'rgba(150, 150, 255, 0.2)');
-		gradient.addColorStop(0.7, 'rgba(150, 150, 255, 0.2)');
-		gradient.addColorStop(1, 'rgba(150, 150, 255, 0.6)');
-		context.fillStyle = gradient;
-		context.fill();
-
-		return PIXI.Texture.fromCanvas(canvas);
 	}
 
 	refreshTextures(hoverPos, microbes, food, scaledRadius, borderSoftRel, borderHardRel) {
