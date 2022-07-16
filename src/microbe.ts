@@ -1,10 +1,26 @@
-class Microbe {
-	constructor(x, y) {
+import {Food} from "./food";
+import {Core} from "./core";
+
+export class Microbe {
+	x: number;
+	y: number;
+	size: number;
+	largeSpecial: number;
+	smallSpecial: number;
+	private orientation: number;
+	private targetOrientation?: number;
+	private offsetOrientation: number;
+	private currentSpeed: number;
+	private targetSize: number;
+	private sqrtSize: number;
+
+	constructor(x: number, y: number) {
 		this.x = x;
 		this.y = y;
 		this.orientation = Math.random() * 2 * Math.PI;
-		this.targetOrientation = null;
 		this.offsetOrientation = 0;
+		this.size = 0;
+		this.sqrtSize = 0;
 		this.setSize(3);
 		this.currentSpeed = 0;
 		this.targetSize = this.size;
@@ -12,7 +28,7 @@ class Microbe {
 		this.smallSpecial = -10;
 	}
 
-	update(worldCenter, borderSoft, borderHard, timeDiff) {
+	update(worldCenter: { x: number; y: number; }, borderSoft: number, borderHard: number, timeDiff: number) {
 		const targetSpeed = 18 + 200 / Math.max(this.size * this.size, 1);
 		this.currentSpeed = 0.95 * this.currentSpeed + 0.05 * targetSpeed;
 
@@ -33,7 +49,7 @@ class Microbe {
 			}
 		}
 
-		if (this.targetOrientation !== null) {
+		if (this.targetOrientation !== undefined) {
 			let orientationRepeatOffset = 0;
 
 			if (Math.abs(this.targetOrientation - this.orientation) >= Math.PI) {
@@ -63,7 +79,7 @@ class Microbe {
 		this.setSize(0.98 * this.size + 0.02 * this.targetSize);
 	}
 
-	interact(core, time, minInteractDistance, foodCells) {
+	interact(core: Core, time: number, minInteractDistance: number, foodCells: Food[][]) {
 		let closest = null;
 		let minDistance = 999999;
 		const self = this;
@@ -102,16 +118,16 @@ class Microbe {
 			const y = (closest.y - this.y) / minDistance;
 			this.targetOrientation = Math.atan2(y, x);
 		} else {
-			this.targetOrientation = null;
+			this.targetOrientation = undefined;
 		}
 	}
 
-	grow(time, foodItem) {
+	grow(time: number, foodItem: Food) {
 		this.targetSize += foodItem.sqrtSize;
 		this.smallSpecial = time;
 	}
 
-	divide(time) {
+	divide(time: number) {
 		this.setSize(3);
 		this.targetSize = this.size;
 		this.largeSpecial = time;
@@ -119,7 +135,7 @@ class Microbe {
 		return new Microbe(this.x, this.y);
 	}
 
-	setSize(size) {
+	setSize(size: number) {
 		this.size = size;
 		this.sqrtSize = Math.sqrt(size);
 	}

@@ -1,5 +1,10 @@
-class Options {
-	constructor(core, optimized, debug) {
+import {Core} from "./core";
+
+export class Options {
+	private readonly options: HTMLDivElement;
+	private readonly btnCloseOptions: HTMLButtonElement;
+
+	constructor(core: Core, optimized: boolean, debug: boolean) {
 		this.options = document.createElement('div');
 		this.options.style.display = 'none';
 		this.options.innerHTML = '<h1>Options</h1>';
@@ -7,7 +12,7 @@ class Options {
 		document.body.appendChild(this.options);
 
 		this.btnCloseOptions = document.createElement('button');
-		this.btnCloseOptions.innerHTML = '<i class="material-icons">close</i>';
+		this.btnCloseOptions.innerHTML = '<span class="material-icons">close</span>';
 		this.btnCloseOptions.id = 'btnclose';
 		const self = this;
 		this.btnCloseOptions.addEventListener('click', function () {
@@ -15,28 +20,30 @@ class Options {
 		}, false);
 		this.options.appendChild(this.btnCloseOptions);
 
-		this.addToggle('Low Resolution', function (on) {
+		this.addToggle('Low Resolution', function (on: boolean) {
 			core.setOptimization(on)
 		}, optimized);
-		this.addToggle('Debug Information', function (on) {
+		this.addToggle('Debug Information', function (on: boolean) {
 			core.setShowDebugInformation(on);
 		}, debug);
 	}
 
-	addToggle(text, func, on) {
-		const toggleOption = document.createElement('div');
+	addToggle(text: string, func: (on: boolean) => void, on: boolean) {
+		const toggleOption: any = document.createElement('div');
 		toggleOption.classList = 'optiontoggle';
 		toggleOption.on = on;
 		toggleOption.innerHTML = text;
 		const toggle = document.createElement('div');
-		toggle.classList = 'toggle';
+		toggle.classList.add('toggle');
 		const btnOff = document.createElement('button');
 		btnOff.innerHTML = 'off';
-		btnOff.classList = 'btntoggle btnoff' + (!on ? ' active' : '');
+		btnOff.classList.add('btntoggle', 'btnoff');
+		if (!on) btnOff.classList.add('active');
 		toggle.appendChild(btnOff);
 		const btnOn = document.createElement('button');
 		btnOn.innerHTML = 'on';
-		btnOn.classList = 'btntoggle btnon' + (on ? ' active' : '');
+		btnOn.classList.add('btntoggle', 'btnon');
+		if (on) btnOn.classList.add('active');
 		toggle.appendChild(btnOn);
 		toggleOption.appendChild(toggle);
 		toggleOption.addEventListener('click', function () {

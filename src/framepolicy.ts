@@ -1,5 +1,5 @@
-class FramePolicy {
-	static getFrames(timeSinceLastUpdate, regularTimeDiff, timeFactor) {
+export class FramePolicy {
+	static getFrames(timeSinceLastUpdate: number, regularTimeDiff: number, timeFactor: number) {
 		const frames = Math.round(timeSinceLastUpdate / regularTimeDiff);
 
 		if (frames > 1) {

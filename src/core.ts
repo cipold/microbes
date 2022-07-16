@@ -1,27 +1,72 @@
-class Core {
-	constructor() {
-		// Constants
-		this.originalWorldSize = 1000;
-		this.borderHardDistanceRel = 0.02;
-		this.borderSoftDistanceRel = 0.05;
-		this.borderMediumDistanceRel = (this.borderHardDistanceRel + this.borderSoftDistanceRel) / 2;
-		this.worldSizeScaling = Math.sqrt(2);
-		this.minWorldSizeFactor = 0.125;
-		this.maxWorldSizeFactor = 2.0;
-		this.timeFactorScaling = 2.0;
-		this.minTimeFactor = 0.125;
-		this.maxTimeFactor = 64.0;
-		this.dropRadius = 15;
-		this.desiredFps = 60;
-		this.timeResolution = 1 / 60;
-		this.maxFeedAmount = 40;
-		this.minInteractDistance = 100;
-		this.microbesLimit = 1000;
-		this.foodLimit = 2000;
+import {Events} from "./events";
+import {Information} from "./information";
+import {Food} from "./food";
+import {Microbe} from "./microbe";
+import {randomPointInCircle} from "./helpers";
+import {Overlay} from "./overlay";
+import {Graphics} from "./graphics";
+import {FramePolicy} from "./framepolicy";
+import {Mesh} from "./mesh";
 
+export class Core {
+	// Parameters
+	timeFactor: number;
+	private worldSizeFactor: number;
+
+	// World size state
+	private worldWidth: number;
+	private worldHeight: number;
+	private worldCenter: { x: number, y: number };
+	private radius: number;
+	private borderSoft: number;
+	private borderMedium: number;
+	private borderHard: number;
+
+	// Simulation state
+	private time: number;
+	private readonly microbes: Microbe[];
+	private readonly food: Food[];
+	private rotation: number;
+	private feedAmount: number;
+
+	// Mouse / touches
+	private readonly hoverPos: any;
+	private readonly dropPos: any;
+
+	// Information
+	private msPerFrame: Information;
+	private drawLoad: Information;
+	private updateLoad: Information;
+
+	// Misc
+	private graphics: Graphics;
+	private overlay: Overlay;
+	private mesh: Mesh;
+	private lastUpdate?: number;
+
+	// Constants
+	private readonly originalWorldSize = 1000;
+	private readonly borderHardDistanceRel = 0.02;
+	private readonly borderSoftDistanceRel = 0.05;
+	private readonly borderMediumDistanceRel = (this.borderHardDistanceRel + this.borderSoftDistanceRel) / 2;
+	private readonly worldSizeScaling = Math.sqrt(2);
+	private readonly minWorldSizeFactor = 0.125;
+	private readonly maxWorldSizeFactor = 2.0;
+	private readonly timeFactorScaling = 2.0;
+	private readonly minTimeFactor = 0.125;
+	private readonly maxTimeFactor = 64.0;
+	private readonly dropRadius = 15;
+	private readonly desiredFps = 60;
+	private readonly timeResolution = 1 / 60;
+	private readonly maxFeedAmount = 40;
+	private readonly minInteractDistance = 100;
+	private readonly microbesLimit = 1000;
+	private readonly foodLimit = 2000;
+
+	constructor() {
 		// Parameters
 		this.timeFactor = 1;
-		this.worldSizeFactor = parseFloat(localStorage.getItem('worldSizeFactor')) || 0.5;
+		this.worldSizeFactor = parseFloat(localStorage.getItem('worldSizeFactor') || "0.5");
 
 		// World size state
 		this.worldWidth = 1;
@@ -50,16 +95,32 @@ class Core {
 		this.msPerFrame = new Information(30);
 		this.drawLoad = new Information(30);
 		this.updateLoad = new Information(30);
+
+		// Permanent settings
+		const optimized = localStorage.getItem('optimized') === 'true';
+		const debug = localStorage.getItem('debug') === 'true';
+
+		// Initialize system
+		this.graphics = new Graphics(optimized, debug);
+		this.overlay = new Overlay(this, optimized, debug);
+		Events.init(this, this.graphics.getInteractive());
+
+		// FIXME: remove this duplicate mesh initialization only added to satisfy typescript
+		this.mesh = new Mesh(this.worldWidth, this.worldHeight, this.minInteractDistance);
+
+		// Initialize world
+		this.resizeWorld(1.0);
+		this.populateWorld();
 	}
 
-	addMicrobe(microbe) {
+	addMicrobe(microbe: Microbe) {
 		if (this.microbes.length < this.microbesLimit) {
 			this.microbes.push(microbe);
 			this.graphics.addMicrobe(microbe);
 		}
 	}
 
-	removeMicrobe(microbe) {
+	removeMicrobe(microbe: Microbe) {
 		const index = this.microbes.indexOf(microbe);
 		if (index >= 0) {
 			this.microbes.splice(index, 1);
@@ -69,7 +130,7 @@ class Core {
 		}
 	}
 
-	addFood(foodItem) {
+	addFood(foodItem: Food) {
 		if (this.food.length < this.foodLimit) {
 			this.mesh.add(foodItem);
 			this.food.push(foodItem);
@@ -77,7 +138,7 @@ class Core {
 		}
 	}
 
-	removeFood(foodItem) {
+	removeFood(foodItem: Food) {
 		// foodItem already removed from mesh
 		const index = this.food.indexOf(foodItem);
 		if (index >= 0) {
@@ -118,11 +179,11 @@ class Core {
 		}
 	}
 
-	resizeWorld(factor) {
+	resizeWorld(factor: number) {
 		const oldWorldSizeFactor = this.worldSizeFactor;
 		this.worldSizeFactor *= factor;
 		this.worldSizeFactor = Math.min(Math.max(this.worldSizeFactor, this.minWorldSizeFactor), this.maxWorldSizeFactor);
-		localStorage.setItem('worldSizeFactor', this.worldSizeFactor);
+		localStorage.setItem('worldSizeFactor', this.worldSizeFactor.toString());
 		factor = this.worldSizeFactor / oldWorldSizeFactor;
 
 		// Resize world
@@ -183,12 +244,12 @@ class Core {
 		);
 	}
 
-	onFullScreenChange(isFullScreen) {
+	onFullScreenChange(isFullScreen: boolean) {
 		this.multiResizeWorld();
 		this.overlay.onFullScreenChange(isFullScreen);
 	}
 
-	onMouseDown(event) {
+	onMouseDown(event: MouseEvent) {
 		if (this.dropPos.mouse) {
 			this.dropPos.mouse.x = event.clientX;
 			this.dropPos.mouse.y = event.clientY;
@@ -201,7 +262,7 @@ class Core {
 		this.dropFood();
 	}
 
-	onMouseMove(event) {
+	onMouseMove(event: MouseEvent) {
 		if (this.hoverPos.mouse) {
 			this.hoverPos.mouse.x = event.clientX;
 			this.hoverPos.mouse.y = event.clientY;
@@ -226,27 +287,27 @@ class Core {
 		delete this.hoverPos.mouse;
 	}
 
-	onMouseWheel() {
+	onMouseWheel(_event: Event) {
 	}
 
-	onTouchStart(changedTouches) {
-		for (let touch of changedTouches) {
-			if (this.hoverPos['touch' + touch.identifier]) {
-				this.hoverPos['touch' + touch.identifier].x = touch.clientX;
-				this.hoverPos['touch' + touch.identifier].y = touch.clientY;
+	onTouchStart(changedTouches: TouchList) {
+		for (let i = 0; i < changedTouches.length; i++) {
+			if (this.hoverPos['touch' + changedTouches[i].identifier]) {
+				this.hoverPos['touch' + changedTouches[i].identifier].x = changedTouches[i].clientX;
+				this.hoverPos['touch' + changedTouches[i].identifier].y = changedTouches[i].clientY;
 			} else {
-				this.hoverPos['touch' + touch.identifier] = {
-					x: touch.clientX,
-					y: touch.clientY
+				this.hoverPos['touch' + changedTouches[i].identifier] = {
+					x: changedTouches[i].clientX,
+					y: changedTouches[i].clientY
 				}
 			}
-			if (this.dropPos['touch' + touch.identifier]) {
-				this.dropPos['touch' + touch.identifier].x = touch.clientX;
-				this.dropPos['touch' + touch.identifier].y = touch.clientY;
+			if (this.dropPos['touch' + changedTouches[i].identifier]) {
+				this.dropPos['touch' + changedTouches[i].identifier].x = changedTouches[i].clientX;
+				this.dropPos['touch' + changedTouches[i].identifier].y = changedTouches[i].clientY;
 			} else {
-				this.dropPos['touch' + touch.identifier] = {
-					x: touch.clientX,
-					y: touch.clientY
+				this.dropPos['touch' + changedTouches[i].identifier] = {
+					x: changedTouches[i].clientX,
+					y: changedTouches[i].clientY
 				}
 			}
 		}
@@ -254,38 +315,38 @@ class Core {
 		this.dropFood();
 	}
 
-	onTouchMove(changedTouches) {
-		for (let touch of changedTouches) {
-			if (this.hoverPos['touch' + touch.identifier]) {
-				this.hoverPos['touch' + touch.identifier].x = touch.clientX;
-				this.hoverPos['touch' + touch.identifier].y = touch.clientY;
+	onTouchMove(changedTouches: TouchList) {
+		for (let i = 0; i < changedTouches.length; i++) {
+			if (this.hoverPos['touch' + changedTouches[i].identifier]) {
+				this.hoverPos['touch' + changedTouches[i].identifier].x = changedTouches[i].clientX;
+				this.hoverPos['touch' + changedTouches[i].identifier].y = changedTouches[i].clientY;
 			} else {
-				this.hoverPos['touch' + touch.identifier] = {
-					x: touch.clientX,
-					y: touch.clientY
+				this.hoverPos['touch' + changedTouches[i].identifier] = {
+					x: changedTouches[i].clientX,
+					y: changedTouches[i].clientY
 				}
 			}
-			if (this.dropPos['touch' + touch.identifier]) {
-				this.dropPos['touch' + touch.identifier].x = touch.clientX;
-				this.dropPos['touch' + touch.identifier].y = touch.clientY;
+			if (this.dropPos['touch' + changedTouches[i].identifier]) {
+				this.dropPos['touch' + changedTouches[i].identifier].x = changedTouches[i].clientX;
+				this.dropPos['touch' + changedTouches[i].identifier].y = changedTouches[i].clientY;
 			} else {
-				this.dropPos['touch' + touch.identifier] = {
-					x: touch.clientX,
-					y: touch.clientY
+				this.dropPos['touch' + changedTouches[i].identifier] = {
+					x: changedTouches[i].clientX,
+					y: changedTouches[i].clientY
 				}
 			}
 		}
 	}
 
-	onTouchEnd(changedTouches) {
-		for (let touch of changedTouches) {
-			this.graphics.removeHoverPos(this.hoverPos['touch' + touch.identifier]);
-			delete this.hoverPos['touch' + touch.identifier];
-			delete this.dropPos['touch' + touch.identifier];
+	onTouchEnd(changedTouches: TouchList) {
+		for (let i = 0; i < changedTouches.length; i++) {
+			this.graphics.removeHoverPos(this.hoverPos['touch' + changedTouches[i].identifier]);
+			delete this.hoverPos['touch' + changedTouches[i].identifier];
+			delete this.dropPos['touch' + changedTouches[i].identifier];
 		}
 	}
 
-	onKeyPress(key) {
+	onKeyPress(key: string) {
 		if (key === '+') {
 			this.onIncreaseSpeed();
 		} else if (key === '-') {
@@ -298,9 +359,7 @@ class Core {
 			this.onDecreaseSize();
 		} else if (key === '*') {
 			this.onIncreaseSize();
-		} else if (key === 27) {
-			this.overlay.closeOptions();
-		} else if (key === 'Escape' || key === 'Esc') {
+		} else if (key === 'Escape') {
 			this.overlay.closeOptions();
 		}
 	}
@@ -327,25 +386,21 @@ class Core {
 		this.overlay.setWorldSize(this.worldSizeFactor);
 	}
 
-	setOptimization(on) {
-		localStorage.setItem('optimized', on);
+	setOptimization(on: boolean) {
+		localStorage.setItem('optimized', on.toString());
 		location.reload();
 	}
 
-	setShowDebugInformation(on) {
-		localStorage.setItem('debug', on);
+	setShowDebugInformation(on: boolean) {
+		localStorage.setItem('debug', on.toString());
 		this.graphics.setShowDebugInformation(on);
 	}
 
 	initMesh() {
-		if (this.mesh) {
-			this.mesh.init(this.worldWidth, this.worldHeight, this.minInteractDistance);
-		} else {
-			this.mesh = new Mesh(this.worldWidth, this.worldHeight, this.minInteractDistance);
-		}
+		this.mesh = new Mesh(this.worldWidth, this.worldHeight, this.minInteractDistance, this.mesh);
 	}
 
-	updateSingle(timeDiff) {
+	updateSingle(timeDiff: number) {
 		this.time += timeDiff;
 
 		// Rotation
@@ -478,19 +533,6 @@ class Core {
 
 	// Initialization
 	start() {
-		// Permanent settings
-		const optimized = JSON.parse(localStorage.getItem('optimized')) || false;
-		const debug = JSON.parse(localStorage.getItem('debug')) || false;
-
-		// Initialize system
-		this.graphics = new Graphics(optimized, debug);
-		this.overlay = new Overlay(this, optimized, debug);
-		Events.init(this, this.graphics.getInteractive());
-
-		// Initialize world
-		this.resizeWorld(1.0);
-		this.populateWorld();
-
 		// Start draw loop
 		const self = this;
 		requestAnimationFrame(function () {

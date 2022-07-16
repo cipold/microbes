@@ -1,0 +1,20 @@
+{
+  "name": "microbes",
+  "description": "A simulation of a tiny ecosystem.",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+	"dev": "vite",
+	"build": "tsc && vite build",
+	"preview": "vite preview"
+  },
+  "devDependencies": {
+	"typescript": "^4.6.4",
+	"vite": "^3.0.0"
+  },
+  "dependencies": {
+	"material-icons": "^1.11.5",
+	"pixi.js": "^6.4.2"
+  }
+}

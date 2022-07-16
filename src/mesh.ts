@@ -1,13 +1,14 @@
-class Mesh {
-	constructor(width, height, minCellSize) {
-		this.init(width, height, minCellSize);
-	}
+import {Food} from "./food";
+import {Microbe} from "./microbe";
 
-	init(width, height, minCellSize) {
-		const oldm = this.m;
-		const oldCols = this.cols;
-		const oldRows = this.rows;
+export class Mesh {
+	private readonly width: number;
+	private readonly height: number;
+	private readonly cols: number;
+	private readonly rows: number;
+	private readonly m: any[][];
 
+	constructor(width: number, height: number, minCellSize: number, old?: Mesh) {
 		this.width = width;
 		this.height = height;
 		this.cols = Math.floor(width / minCellSize);
@@ -22,10 +23,10 @@ class Mesh {
 			}
 		}
 
-		if (oldm) {
-			for (let row = 0; row < oldRows; row++) {
-				for (let col = 0; col < oldCols; col++) {
-					const food = oldm[row][col].food;
+		if (old) {
+			for (let row = 0; row < old.rows; row++) {
+				for (let col = 0; col < old.cols; col++) {
+					const food = old.m[row][col].food;
 					for (let i = 0; i < food.length; i++) {
 						delete food[i].meshCol;
 						delete food[i].meshRow;
@@ -44,7 +45,7 @@ class Mesh {
 		}
 	}
 
-	add(f) {
+	add(f: Food) {
 		if (f.meshCol !== undefined || f.meshRow !== undefined) {
 			console.warn('add called on item with meshRow or meshCol');
 			return;
@@ -65,7 +66,7 @@ class Mesh {
 		this.m[row][col].food.push(f);
 	}
 
-	update(f) {
+	update(f: Food) {
 		if (f.meshCol === undefined || f.meshRow === undefined) {
 			console.warn('update called on item without meshRow or meshCol');
 			return;
@@ -90,7 +91,7 @@ class Mesh {
 		}
 	}
 
-	remove(f) {
+	remove(f: Food) {
 		if (f.meshCol === undefined || f.meshRow === undefined) {
 			console.warn('remove called on item without meshRow or meshCol');
 			return;
@@ -117,10 +118,10 @@ class Mesh {
 		}
 	}
 
-	get(m) {
+	get(microbe: Microbe) {
 		// ~~ == faster Math.floor
-		let col = ~~(this.cols * m.x / this.width);
-		let row = ~~(this.rows * m.y / this.height);
+		let col = ~~(this.cols * microbe.x / this.width);
+		let row = ~~(this.rows * microbe.y / this.height);
 
 		let ret = [];
 		let pr = row - 1;

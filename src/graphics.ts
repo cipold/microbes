@@ -1,5 +1,48 @@
-class Graphics {
-	constructor(optimized, debug) {
+import * as PIXI from 'pixi.js'
+import {AbstractRenderer} from 'pixi.js'
+import {Food} from "./food";
+import {Microbe} from "./microbe";
+
+export class Graphics {
+	private readonly optimized: boolean;
+
+	// Parameters
+	private readonly resolutionFactor: number;
+	private readonly zoomFactor: number;
+
+	// Relative size factors used for texture generation
+	private textureSizeFactor: number;
+	private readonly tsfMicrobe: number;
+	private readonly tsfFood: number;
+	private readonly tsfExplosion: number;
+	private readonly tsfHover: number;
+	private readonly tsfHoverFill: number;
+
+	// Renderer
+	private readonly renderer: PIXI.AbstractRenderer;
+
+	// Stages
+	private readonly stage: PIXI.Container;
+	private readonly scalingStage: PIXI.Container;
+
+	// Background
+	private readonly background = new PIXI.Sprite();
+
+	// Microbes & food
+	private readonly microbesContainer = new PIXI.ParticleContainer();
+	private readonly foodContainer: PIXI.ParticleContainer;
+	private readonly explosionsContainer: PIXI.ParticleContainer;
+
+	// Text
+	private readonly statusText: PIXI.Text;
+
+	private explosionTexture?: PIXI.Texture;
+	private hoverTexture?: PIXI.Texture;
+	private hoverFillTexture?: PIXI.Texture;
+	private microbeTexture?: PIXI.Texture;
+	private foodTexture?: PIXI.Texture;
+
+	constructor(optimized: boolean, debug: boolean) {
 		this.optimized = optimized;
 
 		// Parameters
@@ -15,8 +58,11 @@ class Graphics {
 		this.tsfHoverFill = 80;
 		const fullResolution = window.devicePixelRatio || 1;
 		const lowResolution = fullResolution > 1 ? 1 : 0.5;
+
 		// Renderer
-		this.renderer = PIXI.autoDetectRenderer(800, 800, {
+		this.renderer = PIXI.autoDetectRenderer({
+			width: 800,
+			height: 800,
 			backgroundColor: 0x0b0b20,
 			antialias: !optimized,
 			resolution: optimized ? lowResolution : fullResolution
@@ -38,24 +84,24 @@ class Graphics {
 		this.scalingStage.addChild(this.background);
 
 		// Microbes & food
-		// this.microbesContainer = new PIXI.particles.ParticleContainer(microbesLimit,
-		this.microbesContainer = new PIXI.particles.ParticleContainer();
+		// this.microbesContainer = new PIXI.ParticleContainer(microbesLimit,
+		this.microbesContainer = new PIXI.ParticleContainer();
 		this.microbesContainer.setProperties({
 			scale: true,
 			position: true,
 			rotation: true,
 			alpha: !optimized
 		});
-		// this.foodContainer = new PIXI.particles.ParticleContainer(foodLimit,
-		this.foodContainer = new PIXI.particles.ParticleContainer();
+		// this.foodContainer = new PIXI.ParticleContainer(foodLimit,
+		this.foodContainer = new PIXI.ParticleContainer();
 		this.foodContainer.setProperties({
 			scale: true,
 			position: true,
 			rotation: false,
 			alpha: !optimized
 		});
-		// this.explosionsContainer = new PIXI.particles.ParticleContainer(explosionLimit,
-		this.explosionsContainer = new PIXI.particles.ParticleContainer();
+		// this.explosionsContainer = new PIXI.ParticleContainer(explosionLimit,
+		this.explosionsContainer = new PIXI.ParticleContainer();
 		this.explosionsContainer.setProperties({
 			scale: true,
 			position: true,
@@ -73,7 +119,7 @@ class Graphics {
 		if (debug) this.stage.addChild(this.statusText);
 	}
 
-	static getMicrobeTexture(renderer, tsf) {
+	static getMicrobeTexture(renderer: AbstractRenderer, tsf: number) {
 		const g = new PIXI.Graphics();
 
 		// Head
@@ -89,7 +135,7 @@ class Graphics {
 		return renderer.generateTexture(g);
 	}
 
-	static getFoodTexture(renderer, tsf) {
+	static getFoodTexture(renderer: AbstractRenderer, tsf: number) {
 		const g = new PIXI.Graphics();
 
 		g.lineStyle(0);
@@ -99,7 +145,7 @@ class Graphics {
 		return renderer.generateTexture(g);
 	}
 
-	static getExplosionTexture(renderer, tsf) {
+	static getExplosionTexture(renderer: AbstractRenderer, tsf: number) {
 		const g = new PIXI.Graphics();
 
 		g.lineStyle(0);
@@ -109,25 +155,27 @@ class Graphics {
 		return renderer.generateTexture(g);
 	}
 
-	static getBackgroundTexture(scaledRadius, borderSoftUnscaled, borderHardUnscaled) {
+	static getBackgroundTexture(scaledRadius: number, borderSoftUnscaled: number, borderHardUnscaled: number) {
 		const r = scaledRadius;
 		const canvas = document.createElement('canvas');
 		canvas.width = 2 * r;
 		canvas.height = 2 * r;
 		const context = canvas.getContext('2d');
 
-		const gradient = context.createRadialGradient(r, r, 0, r, r, r);
-		gradient.addColorStop(0, '#0d0d28');
-		gradient.addColorStop(borderSoftUnscaled, '#161638');
-		gradient.addColorStop(borderHardUnscaled, '#303060');
-		gradient.addColorStop(1, 'rgba(11, 11, 32, 0)');
-		context.fillStyle = gradient;
-		context.fillRect(0, 0, 2 * r, 2 * r);
+		if (context) {
+			const gradient = context.createRadialGradient(r, r, 0, r, r, r);
+			gradient.addColorStop(0, '#0d0d28');
+			gradient.addColorStop(borderSoftUnscaled, '#161638');
+			gradient.addColorStop(borderHardUnscaled, '#303060');
+			gradient.addColorStop(1, 'rgba(11, 11, 32, 0)');
+			context.fillStyle = gradient;
+			context.fillRect(0, 0, 2 * r, 2 * r);
+		}
 
-		return PIXI.Texture.fromCanvas(canvas);
+		return PIXI.Texture.from(canvas);
 	}
 
-	static getHoverTexture(renderer, tsf) {
+	static getHoverTexture(renderer: AbstractRenderer, tsf: number) {
 		const g = new PIXI.Graphics();
 
 		g.lineStyle(0);
@@ -137,31 +185,33 @@ class Graphics {
 		return renderer.generateTexture(g);
 	}
 
-	static getHoverFillTexture(tsf) {
+	static getHoverFillTexture(tsf: number) {
 		const r = 0.5 * tsf;
 		const canvas = document.createElement('canvas');
 		canvas.width = tsf;
 		canvas.height = tsf;
 		const context = canvas.getContext('2d');
 
-		context.beginPath();
-		context.arc(r, r, r, 0, 2 * Math.PI);
-		context.closePath();
-		const gradient = context.createRadialGradient(r, r, 0, r, r, r);
-		gradient.addColorStop(0.2, 'rgba(150, 150, 255, 0.2)');
-		gradient.addColorStop(0.7, 'rgba(150, 150, 255, 0.2)');
-		gradient.addColorStop(1, 'rgba(150, 150, 255, 0.6)');
-		context.fillStyle = gradient;
-		context.fill();
+		if (context) {
+			context.beginPath();
+			context.arc(r, r, r, 0, 2 * Math.PI);
+			context.closePath();
+			const gradient = context.createRadialGradient(r, r, 0, r, r, r);
+			gradient.addColorStop(0.2, 'rgba(150, 150, 255, 0.2)');
+			gradient.addColorStop(0.7, 'rgba(150, 150, 255, 0.2)');
+			gradient.addColorStop(1, 'rgba(150, 150, 255, 0.6)');
+			context.fillStyle = gradient;
+			context.fill();
+		}
 
-		return PIXI.Texture.fromCanvas(canvas);
+		return PIXI.Texture.from(canvas);
 	}
 
 	getInteractive() {
 		return this.renderer.view;
 	}
 
-	resizeCanvas(hoverPos, microbes, food, worldWidth, worldHeight, radius, borderSoftRel, borderHardRel) {
+	resizeCanvas(hoverPos: any, microbes: Microbe[], food: Food[], worldWidth: number, worldHeight: number, radius: number, borderSoftRel: number, borderHardRel: number) {
 		// Calculate resolution by normalizing with device based pixel ratio and scaling it with desired resolution factor
 		const resolution = /*window.devicePixelRatio * */this.resolutionFactor;
 		const width = window.innerWidth * resolution;
@@ -189,7 +239,7 @@ class Graphics {
 		this.background.scale.y = 1 / scaleFactor;
 	}
 
-	drawMicrobe(microbe, time) {
+	drawMicrobe(microbe: any, time: number) {
 		const sprite = microbe.sprite;
 		sprite.rotation = microbe.orientation;
 		sprite.x = microbe.x;
@@ -234,7 +284,7 @@ class Graphics {
 		}
 	}
 
-	drawFood(foodItem, time) {
+	drawFood(foodItem: any, time: number) {
 		const sprite = foodItem.sprite;
 		sprite.x = foodItem.x;
 		sprite.y = foodItem.y;
@@ -253,7 +303,7 @@ class Graphics {
 		}
 	}
 
-	draw(rotation, time, hoverPos, dropRadius, feedLevel, microbes, food, fps, updateLoad, drawLoad) {
+	draw(rotation: number, time: number, hoverPos: any, dropRadius: number, feedLevel: number, microbes: Microbe[], food: Food[], fps: number, updateLoad: number, drawLoad: number) {
 		this.scalingStage.rotation = rotation;
 
 		// Draw hover positions
@@ -299,14 +349,14 @@ class Graphics {
 		this.renderer.render(this.stage);
 	}
 
-	addMicrobe(microbe) {
+	addMicrobe(microbe: any) {
 		const sprite = new PIXI.Sprite(this.microbeTexture);
 		sprite.anchor.set(3 / 5, 0.5);
 		microbe.sprite = sprite;
 		this.microbesContainer.addChild(sprite);
 	}
 
-	removeMicrobe(microbe) {
+	removeMicrobe(microbe: any) {
 		this.microbesContainer.removeChild(microbe.sprite);
 		microbe.sprite.destroy();
 		delete microbe.sprite;
@@ -317,20 +367,20 @@ class Graphics {
 		}
 	}
 
-	addFood(foodItem) {
+	addFood(foodItem: any) {
 		const sprite = new PIXI.Sprite(this.foodTexture);
 		sprite.anchor.set(0.5);
 		foodItem.sprite = sprite;
 		this.foodContainer.addChild(sprite);
 	}
 
-	removeFood(foodItem) {
+	removeFood(foodItem: any) {
 		this.foodContainer.removeChild(foodItem.sprite);
 		foodItem.sprite.destroy();
 		delete foodItem.sprite;
 	}
 
-	removeHoverPos(hoverPos) {
+	removeHoverPos(hoverPos: any) {
 		if (hoverPos.hoverSprite) {
 			this.scalingStage.removeChild(hoverPos.hoverSprite);
 			hoverPos.hoverSprite.destroy();
@@ -343,7 +393,7 @@ class Graphics {
 		}
 	}
 
-	refreshTextures(hoverPos, microbes, food, scaledRadius, borderSoftRel, borderHardRel) {
+	refreshTextures(hoverPos: any, microbes: any[], food: any[], scaledRadius: number, borderSoftRel: number, borderHardRel: number) {
 		if (this.explosionTexture) this.explosionTexture.destroy();
 		this.explosionTexture = Graphics.getExplosionTexture(this.renderer, Math.max(this.tsfExplosion * this.textureSizeFactor, 3));
 
@@ -382,11 +432,11 @@ class Graphics {
 		this.background.texture = Graphics.getBackgroundTexture(scaledRadius, borderSoftRel, borderHardRel);
 	}
 
-	toWorldPos(x, y) {
+	toWorldPos(x: number, y: number) {
 		return this.scalingStage.toLocal(new PIXI.Point(x, y));
 	}
 
-	setShowDebugInformation(on) {
+	setShowDebugInformation(on: boolean) {
 		if (on) {
 			this.stage.addChild(this.statusText);
 		} else {

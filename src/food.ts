@@ -1,14 +1,26 @@
-class Food {
-	constructor(time, x, y, size = null) {
+import {Mesh} from "./mesh";
+
+export class Food {
+	x: number;
+	y: number;
+	private size: number = 0;
+	sqrtSize: number = 0;
+	special: number;
+	private readonly maxSize: number;
+	positionChanged: boolean;
+	meshCol?: number;
+	meshRow?: number;
+
+	constructor(time: number, x: number, y: number, size?:number) {
 		this.x = x;
 		this.y = y;
 		this.special = time;
-		this.setSize(size === null ? 1 : size);
+		this.setSize(size === undefined ? 1 : size);
 		this.maxSize = 100.0;
 		this.positionChanged = true;
 	}
 
-	update(worldCenter, borderMedium, timeDiff, mesh) {
+	update(worldCenter: { x: number; y: number; }, borderMedium: number, timeDiff: number, mesh: Mesh) {
 		if (this.positionChanged) {
 			let dx = worldCenter.x - this.x;
 			let dy = worldCenter.y - this.y;
@@ -28,7 +40,7 @@ class Food {
 		this.setSize(this.size + 0.3 * timeDiff);
 	}
 
-	setSize(size) {
+	setSize(size: number) {
 		if (size > this.maxSize) {
 			this.size = this.maxSize;
 		} else {

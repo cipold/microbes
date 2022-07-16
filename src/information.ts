@@ -1,14 +1,14 @@
-class Information {
-	constructor(averageCount) {
+export class Information {
+	averageCount: number;
+	values: number[] = [];
+
+	constructor(averageCount: number) {
 		// Number of elements for which the average is calculated
 		this.averageCount = averageCount;
-
-		// Value buffer
-		this.values = [];
 	}
 
 	// Set the current value and reduce value array if required
-	addValue(value) {
+	addValue(value: number) {
 		this.values.push(value);
 
 		if (this.values.length > this.averageCount) {
